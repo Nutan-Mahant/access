@@ -1,0 +1,81 @@
+To use Stripe in a GSP, you will use the TagLib provided by the plugin. The TagLib will take care of processing the credit card details. You can also optionally have it completely generate the credit card form fields too.
+
+The first tag you will need is *script*. The *formName* attribute needs to match the name attribute on your <g:form> tag.
+{code}
+<stripe:script formName="payment-form"/> 
+{code}
+
+If you want the plugin to create the credit card fields (number, cvc, exp-month & exp-year), you can use the additional *creditCardInputs* tag. The required *cssClass* attribute is what class you want the plugin to put for the div tag surrounding each credit card field.
+{code}
+<stripe:creditCardInputs cssClass="form-row"/>
+{code}
+
+Here is what a complete form might look like using both tags:
+{code}
+<!doctype html>
+<html>
+    <head>
+        <meta name="layout" content="main"/>
+        <r:require module="application"/>
+    </head>
+    <body>
+        <h3>Checkout</h3>
+        
+        <stripe:script formName="payment-form"/>
+        
+        <g:form action="charge" method="POST" name="payment-form">
+            <div class="form-row">
+                <label>Amount (USD)</label>
+                <input type="text" size="20" autocomplete="off" id="amount" name="amount"/>
+            </div>
+            
+            <stripe:creditCardInputs cssClass="form-row"/>     
+
+            <button type="submit">Submit Payment</button>
+        </g:form>
+    </body>
+</html>
+{code}
+
+You don't have to use the *creditCardInputs* tag and can include these fields manually in your form if you'd prefer. If you do create your own credit card fields, make sure you don't have a *name* attribute on the *input* elements so that they never get submitted to the server and that you use the correct class name so that the Stripe JavaScript works. Take a look at the [Stripe form documentation|https://stripe.com/docs/tutorials/forms] for more information.
+
+Once your credit card form is setup, the next step is to create a Grails controller to handle the form submission. The only two params you need to capture are *stripeToken* and *amount* for the example above.
+{code}
+package stripesample
+
+import com.stripe.model.Charge
+import com.stripe.exception.CardException;
+
+class CheckoutController {
+    
+    def index() {}
+    
+    def charge(String stripeToken, Double amount) {
+        def amountInCents = (amount * 100) as Integer
+        
+        def chargeParams = [
+            'amount': amountInCents, 
+            'currency': 'usd', 
+            'card': stripeToken, 
+            'description': 'customer@sample.org'
+        ]
+        
+        def status
+        try {
+            Charge.create(chargeParams)
+            status = 'Your purchase was successful.'
+        } catch(CardException) {
+            status = 'There was an error processing your credit card.'
+        }
+            
+        redirect(action: "confirmation", params: [msg: status])
+        return
+    }
+    
+    def confirmation(String msg) {
+        [msg: msg]
+    }
+}
+{code}
+
+As you can see, the *charge* action reads in the *tripeToken* and *amount*, converts the *amount* to *amountInCents* which is the format Stripe expects it in and then creates a *chargeParams* map to use with the Java API. This a very basic example and there are lots of additional options for creating charges. Please take a look at the [Stripe Java Documentation|https://stripe.com/docs/api?lang=java] for more information.

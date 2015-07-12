@@ -1,0 +1,27 @@
+<plugin name='stripe' version='2.6' grailsVersion='1.3.7 &gt; *'>
+  <title>Stripe</title>
+  <description>Plugin for using Stripe to process credit card transactions.</description>
+  <documentation>http://bobbywarner.github.com/grails-stripe</documentation>
+  <type>StripeGrailsPlugin</type>
+  <resources>
+    <resource>StripeResources</resource>
+    <resource>grails.plugins.stripe.StripeTagLib</resource>
+  </resources>
+  <repositories>
+    <repository name='grailsCentral' url='http://grails.org/plugins' />
+    <repository name='mavenCentral' url='http://repo1.maven.org/maven2/' />
+    <repository name='http://grails.org/plugins' url='http://grails.org/plugins' />
+  </repositories>
+  <dependencies>
+    <compile>
+      <dependency group='com.stripe' name='stripe-java' version='1.7.1' />
+    </compile>
+  </dependencies>
+  <plugins>
+    <compile>
+      <plugin group='org.grails.plugins' name='resources' version='1.2.1' />
+    </compile>
+  </plugins>
+  <runtimePluginRequirements />
+  <behavior />
+</plugin>
